@@ -1,0 +1,39 @@
+GET http://localhost:3001
+
+###
+POST http://localhost:3001/user/register
+Content-Type: application/json 
+
+{
+    "username": "test1",
+    "password": "1234"
+}
+
+###
+POST http://localhost:3001/user/login
+Content-Type: application/json 
+
+{
+    "username": "test1",
+    "password": "1234"
+}
+
+###
+GET http://localhost:3001/user/list
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NGRkOGViODM5ZjQyMGE1YTE5OGM2YmIiLCJpYXQiOjE2OTIyODU4NTcsImV4cCI6MTcyMzg0MzQ1N30.bGMVPpL2APMhpS4OH6YgpEh8JO_Y-WVHjvY0Z78Hecg
+
+###
+POST http://localhost:3001/user/refresh
+Content-Type: application/json 
+
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NGRkOGViODM5ZjQyMGE1YTE5OGM2YmIiLCJpYXQiOjE2OTIyOTMwNTEsImV4cCI6MTcyMzg1MDY1MX0.TBMegmLDfSRrtvHuFEL0DY3iMk-DBlsut7Xox6WJ0LM"
+}
+
+###
+POST http://localhost:3001/user/logout
+Content-Type: application/json 
+
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NGRkOGViODM5ZjQyMGE1YTE5OGM2YmIiLCJpYXQiOjE2OTIyOTI5OTEsImV4cCI6MTcyMzg1MDU5MX0.Iti6Jf42dFsFSFkyNxTH9wIZx18o_b_BR5RQWYnf1LY"
+}
