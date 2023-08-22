@@ -1,14 +1,16 @@
 const express = require('express');
 const route = express.Router();
 const user = require("../models/user.model")
-const client = require("../helper/connection_redis")
-
+// const client = require("../helper/connection_redis")
+const client = require("../helper/connect_ioredis")
 const {userValidate} = require('../helper/validation')
 const {signAccessToken, verifyAccessToken, signRefreshToken, verifyRefreshToken} = require('../helper/jwt_service')
+const { addDevice, checkDeviceId } = require('../helper/redis_service')
 const {
     BadRequestError,    
     ForbiddenError
 } = require('../core/error.response')
+const createError = require('http-errors')
 
 route.post("/register", async (req, res, next) => {
     try {
@@ -39,7 +41,7 @@ route.post("/register", async (req, res, next) => {
 
 route.post("/login", async (req, res, next) => {
     try {
-        const { username, password } = req.body;
+        const { username, password, deviceId } = req.body;
         const {error} = userValidate(req.body)
         if(error) {
             throw new BadRequestError("Not validated")
@@ -48,13 +50,31 @@ route.post("/login", async (req, res, next) => {
         if(!foundUser) {
             res.send("user not found")
         }
+        const userId = foundUser._id
+        const check = await checkDeviceId(userId.toString(), deviceId)
+
         const isValid = await foundUser.isCheckPassword(password)
         if(!isValid) {
             throw new BadRequestError("Not validated")
         }
+        
+        const numberOfDevice = await client.llen(`deviceId-${userId}`)
+        
+        if(!check) {
+            if(numberOfDevice < 3 ) {
+                await addDevice(userId, deviceId)
+            } else {
+                client.rpop(`deviceId-${userId}`)
+                await addDevice(userId, deviceId)
+            }
+        }
+        
+
         const accessToken = await signAccessToken(foundUser._id)
         const refreshToken = await signRefreshToken(foundUser._id)
-    
+        req.session.refToken = refreshToken
+        req.session.userId = foundUser._id
+           
         res.json({
             accessToken,
             refreshToken
@@ -73,11 +93,19 @@ route.get("/list", verifyAccessToken, (req, res, next) => {
             username: "Sonny"
         }
     ]
-
-    res.json(listUser)
+    if(req.session.userId) {
+        res.send(listUser)
+    }
 })
 route.post("/refresh", async (req, res, next) => {
-    const { refreshToken } = req.body
+    const { refreshToken, deviceId } = req.body
+    const payload = await verifyRefreshToken(refreshToken)
+    const userId = payload.userId.toString()
+    const check = await checkDeviceId(userId, deviceId)
+
+    if(!check) {
+        return next(createError.Unauthorized('You are not allowed to refresh token'))
+    }
     if(!refreshToken) {
         return res.status(401).send({
             status: 401,
@@ -85,7 +113,7 @@ route.post("/refresh", async (req, res, next) => {
         })
     }
     try {
-        const result = await client.lRange('token', 0, 10)
+        const result = await client.lrange('token', 0, 99)
         if(result.indexOf(refreshToken) > -1 ) {
             return res.status(400).json({
                 status: 400,
@@ -96,12 +124,12 @@ route.post("/refresh", async (req, res, next) => {
         const payload = await verifyRefreshToken(refreshToken)
         const userId = payload.userId
         const accessToken = await signAccessToken(userId)
+        const refToken = await signRefreshToken(userId)
+
         res.json({
             accessToken: accessToken,
-            refreshToken: refreshToken,
+            refreshToken: refToken
         })
-        res.json(payload)
-
 
     } catch (error) {
         res.status(501).json({
@@ -117,11 +145,21 @@ route.post('/logout', async (req, res, next) => {
         if(!refreshToken){
             throw new ForbiddenError("have no refresh token")
         }
-        await client.LPUSH('token', refreshToken);
-        return res.status(200).json({
-            'status': 200,
-          'data': 'You are logged out',
+        const payload = await verifyRefreshToken(refreshToken)
+        const userId = payload.userId
+        if(client.get(userId) != refreshToken) {
+            return next(createError.Unauthorized("Invalid Token"))
+        }
+        const setTTL = await client.pipeline().ttl(userId.toString()).exec(function (err, result) {
+            const ttl = result[0][1]
+            client.lpush('token', refreshToken, ttl);
+            console.log(ttl)
+            return res.status(200).json({
+                'status': 200,
+                'data': 'You are logged out',
+            })
         })
+        req.session.destroy()
               
     } catch (error) {
         return res.status(500).json({

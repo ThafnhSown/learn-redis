@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
-const createError = require('http-error')
-const client = require('./connection_redis');
+const createError = require('http-errors')
+// const client = require('./connection_redis');
+const client = require("../helper/connect_ioredis")
 const {
     BadRequestError,
     AuthFailureError,
@@ -35,15 +36,13 @@ const verifyAccessToken = async (req, res, next) => {
     //verify
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, payload) => {
         if(err) {
-            if(err.name === "JsonWebTokenError") {
-                throw new AuthFailureError("Invalid Token")
+            if(err.name === "TokenExpiredError") {
+               return next(createError.Unauthorized('Token Expired Error'))
             } else {
-                throw new BadRequestError("Expired token")
-            }
-            
-            
+                return next(createError.Unauthorized('Invalid Token'))
+            }    
         }
-        req.payload = payload
+        req.payload = payload 
         next()
     })
 }
@@ -53,7 +52,7 @@ const signRefreshToken = async (userId) => {
         const payload = {
             userId
         }
-        const secret = process.env.REFRESH_TOKEN_SECRET
+        const secret = 'ssh'
         const options = {
             expiresIn: "1y"
         }
@@ -72,17 +71,15 @@ const signRefreshToken = async (userId) => {
 
 const verifyRefreshToken = async (refreshToken) => {
     return new Promise((resolve, reject) => {
-        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, payload) => {
+        jwt.verify(refreshToken, 'ssh', (err, decoded) => {
             if(err) {
                 return reject(err)
             }
-            resolve(payload)
-            
+            resolve(decoded)    
         })   
     })
-    
-}
 
+}
 
 module.exports = {
     signAccessToken,
