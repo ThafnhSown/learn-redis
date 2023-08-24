@@ -28,7 +28,7 @@ const signAccessToken = async (userId) => {
 
 const verifyAccessToken = async (req, res, next) => {
     if(!req.headers['authorization']) {
-        throw new NotFoundError("have no access token")
+        return next(createError[404]("not have access token"))
     }
     const authHeader = req.headers['authorization']
     const bearerToken = authHeader.split(' ');

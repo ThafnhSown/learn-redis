@@ -11,6 +11,7 @@ const {
     ForbiddenError
 } = require('../core/error.response')
 const createError = require('http-errors')
+const { COOKIE_OPTIONS } = require('../constant/index')
 
 route.post("/register", async (req, res, next) => {
     try {
@@ -30,6 +31,11 @@ route.post("/register", async (req, res, next) => {
             password
         })
         const savedUser = await newUser.save()
+        const refreshToken = await signRefreshToken(savedUser._id)
+
+        res.cookie("jwt", refreshToken, COOKIE_OPTIONS )
+        res.cookie("userId", savedUser._id, COOKIE_OPTIONS)
+
         return res.json({
             status: "oke",
             elements: savedUser
@@ -74,6 +80,10 @@ route.post("/login", async (req, res, next) => {
         const refreshToken = await signRefreshToken(foundUser._id)
         req.session.refToken = refreshToken
         req.session.userId = foundUser._id
+   
+        res.cookie("userId", foundUser._id, COOKIE_OPTIONS)
+        res.cookie("access_token", accessToken, COOKIE_OPTIONS)
+        res.cookie("refresh_token", refreshToken, COOKIE_OPTIONS)
            
         res.json({
             accessToken,
@@ -93,19 +103,11 @@ route.get("/list", verifyAccessToken, (req, res, next) => {
             username: "Sonny"
         }
     ]
-    if(req.session.userId) {
-        res.send(listUser)
-    }
+    res.send(listUser)
 })
-route.post("/refresh", async (req, res, next) => {
-    const { refreshToken, deviceId } = req.body
-    const payload = await verifyRefreshToken(refreshToken)
-    const userId = payload.userId.toString()
-    const check = await checkDeviceId(userId, deviceId)
-
-    if(!check) {
-        return next(createError.Unauthorized('You are not allowed to refresh token'))
-    }
+route.get("/refresh", async (req, res, next) => {
+    const { deviceId } = req.body
+    const refreshToken = req.cookies.refresh_token
     if(!refreshToken) {
         return res.status(401).send({
             status: 401,
@@ -123,8 +125,15 @@ route.post("/refresh", async (req, res, next) => {
 
         const payload = await verifyRefreshToken(refreshToken)
         const userId = payload.userId
+        const check = await checkDeviceId(userId, deviceId)
+        if(!check) {
+        return next(createError.Unauthorized('You are not allowed to refresh token'))
+        }
         const accessToken = await signAccessToken(userId)
         const refToken = await signRefreshToken(userId)
+
+        res.cookie("access_token", accessToken, COOKIE_OPTIONS)
+        res.cookie("refresh_token", refToken, COOKIE_OPTIONS)
 
         res.json({
             accessToken: accessToken,
@@ -141,26 +150,26 @@ route.post("/refresh", async (req, res, next) => {
 
 route.post('/logout', async (req, res, next) => {
     try {
-        const { refreshToken } = req.body
+        const refreshToken = req.cookies.refresh_token
         if(!refreshToken){
             throw new ForbiddenError("have no refresh token")
         }
         const payload = await verifyRefreshToken(refreshToken)
         const userId = payload.userId
-        if(client.get(userId) != refreshToken) {
-            return next(createError.Unauthorized("Invalid Token"))
-        }
         const setTTL = await client.pipeline().ttl(userId.toString()).exec(function (err, result) {
             const ttl = result[0][1]
             client.lpush('token', refreshToken, ttl);
             console.log(ttl)
+
+            res.clearCookie('access_token')
+            res.clearCookie('refresh_token')
+
             return res.status(200).json({
                 'status': 200,
                 'data': 'You are logged out',
             })
         })
-        req.session.destroy()
-              
+
     } catch (error) {
         return res.status(500).json({
             'status': 500,
@@ -169,5 +178,10 @@ route.post('/logout', async (req, res, next) => {
     }
 })
 
+route.post('/check', async (req, res) => {
+    const ref = req.cookies.refresh_token
+    console.log(ref)
+    res.json(ref)
+})
 
 module.exports = route

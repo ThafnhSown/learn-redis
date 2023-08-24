@@ -5,7 +5,7 @@ POST http://localhost:3001/user/register
 Content-Type: application/json 
 
 {
-    "username": "test2",
+    "username": "test3",
     "password": "1234"
 }
 
@@ -16,26 +16,25 @@ Content-Type: application/json
 {
     "username": "sonidabezt5",
     "password": "sonidabezt",
-    "deviceId": "15"
+    "deviceId": "41"
 }
 
 ###
 GET http://localhost:3001/user/list
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NGRjZThmMTg5ZTAxNWMxY2NjMjlkN2EiLCJpYXQiOjE2OTI2NzYzMTUsImV4cCI6MTY5MjY3NjMyNX0.kb5205brXjT3XPDrDWQJkpUv6WZUby0Vk7qn2UHl4nM
 
 ###
-POST http://localhost:3001/user/refresh
+GET http://localhost:3001/user/refresh
 Content-Type: application/json 
 
 {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NGRjZThmMTg5ZTAxNWMxY2NjMjlkN2EiLCJpYXQiOjE2OTI2Nzc3ODIsImV4cCI6MTcyNDIzNTM4Mn0.ZhMPjsC-v4ENqdHpO0DY1LsUEZZMG63mBMBzvXrsAxc",
-    "deviceId": "12"
+    "deviceId": "41"
 }
 
 ###
 POST http://localhost:3001/user/logout
 Content-Type: application/json 
 
-{
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NGRjZThmMTg5ZTAxNWMxY2NjMjlkN2EiLCJpYXQiOjE2OTI2NzY3NjMsImV4cCI6MTcyNDIzNDM2M30.5xbCB0sNQSsGQ2AJ_CAxmNNyk59PZv9QWWXZUimeGbU"
-}
+
+###
+POST http://localhost:3001/user/check
+
