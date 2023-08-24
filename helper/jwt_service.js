@@ -26,13 +26,11 @@ const signAccessToken = async (userId) => {
     })
 }
 
-const verifyAccessToken = async (req, res, next) => {
-    if(!req.headers['authorization']) {
+const verifyAccessToken = (req, res, next) => {
+    const token = req.cookies.access_token
+    if(!token) {
         return next(createError[404]("not have access token"))
     }
-    const authHeader = req.headers['authorization']
-    const bearerToken = authHeader.split(' ');
-    const token = bearerToken[1]
     //verify
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, payload) => {
         if(err) {
@@ -87,3 +85,7 @@ module.exports = {
     signRefreshToken,
     verifyRefreshToken,
 } 
+
+function newFunction(req) {
+    return req.headers['authorization'];
+}

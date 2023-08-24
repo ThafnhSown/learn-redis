@@ -1,5 +1,5 @@
 const COOKIE_OPTIONS = {
-    HttpOnly: true,
+    httpOnly: true,
     secure: false,
   };
 

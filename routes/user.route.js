@@ -84,7 +84,7 @@ route.post("/login", async (req, res, next) => {
         res.cookie("userId", foundUser._id, COOKIE_OPTIONS)
         res.cookie("access_token", accessToken, COOKIE_OPTIONS)
         res.cookie("refresh_token", refreshToken, COOKIE_OPTIONS)
-           
+        
         res.json({
             accessToken,
             refreshToken
@@ -94,7 +94,8 @@ route.post("/login", async (req, res, next) => {
     }   
 })
 
-route.get("/list", verifyAccessToken, (req, res, next) => {
+route.get("/list",verifyAccessToken , (req, res, next) => {
+   
     const listUser = [
         {
             username: "Matt"
@@ -134,7 +135,7 @@ route.get("/refresh", async (req, res, next) => {
 
         res.cookie("access_token", accessToken, COOKIE_OPTIONS)
         res.cookie("refresh_token", refToken, COOKIE_OPTIONS)
-
+       
         res.json({
             accessToken: accessToken,
             refreshToken: refToken
@@ -161,6 +162,7 @@ route.post('/logout', async (req, res, next) => {
             client.lpush('token', refreshToken, ttl);
             console.log(ttl)
 
+            res.clearCookie('userId')
             res.clearCookie('access_token')
             res.clearCookie('refresh_token')
 
