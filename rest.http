@@ -22,12 +22,13 @@ Content-Type: application/json
 ###
 GET http://localhost:3001/user/list
 
+
 ###
 GET http://localhost:3001/user/refresh
 Content-Type: application/json 
 
 {
-    "deviceId": "41"
+    "deviceId": "88"
 }
 
 ###
@@ -36,5 +37,19 @@ Content-Type: application/json
 
 
 ###
-POST http://localhost:3001/user/check
+POST http://localhost:3001/user/admin/add
+Content-Type: application/json 
 
+{
+    "title": "test2",
+    "year": 2023,
+    "author": "sonidabezt"
+}
+
+###
+POST http://localhost:3001/user/admin/delete
+Content-Type: application/json 
+
+{
+    "bookId": "64e84ef1e2e035bad8441042"
+}

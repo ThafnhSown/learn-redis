@@ -2,21 +2,16 @@ const jwt = require('jsonwebtoken');
 const createError = require('http-errors')
 // const client = require('./connection_redis');
 const client = require("../helper/connect_ioredis")
-const {
-    BadRequestError,
-    AuthFailureError,
-    NotFoundError,
-    ForbiddenError
-} = require('../core/error.response')
 
-const signAccessToken = async (userId) => {
+const signAccessToken = async (userId, roles) => {
     return new Promise((resolve, reject) => {
         const payload = {
-            userId
+            userId,
+            roles
         }
         const secret = process.env.ACCESS_TOKEN_SECRET
         const options = {
-            expiresIn: "10s"
+            expiresIn: "600s"
         }
 
         jwt.sign(payload, secret, options, (err, token) => {
@@ -50,7 +45,7 @@ const signRefreshToken = async (userId) => {
         const payload = {
             userId
         }
-        const secret = 'ssh'
+        const secret = process.env.REFRESH_TOKEN_SECRET
         const options = {
             expiresIn: "1y"
         }
@@ -69,14 +64,13 @@ const signRefreshToken = async (userId) => {
 
 const verifyRefreshToken = async (refreshToken) => {
     return new Promise((resolve, reject) => {
-        jwt.verify(refreshToken, 'ssh', (err, decoded) => {
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, payload) => {
             if(err) {
                 return reject(err)
             }
-            resolve(decoded)    
+            resolve(payload)    
         })   
     })
-
 }
 
 module.exports = {
@@ -85,7 +79,3 @@ module.exports = {
     signRefreshToken,
     verifyRefreshToken,
 } 
-
-function newFunction(req) {
-    return req.headers['authorization'];
-}

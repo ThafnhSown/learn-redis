@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const UserRoute = require("./routes/user.route")
+const BookRoute = require("./routes/book.route")
 const createError = require('http-errors')
 const cors = require('cors')
 const session = require('express-session')
@@ -35,6 +36,7 @@ app.use(cors({
     credentials: true
 }))
 app.use("/user", UserRoute)
+app.use("/book", BookRoute)
 app.use((req, res, next) => {
    next(createError.NotFound('This route does not exist'))
 })

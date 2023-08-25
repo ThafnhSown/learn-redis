@@ -1,6 +1,7 @@
 const express = require('express');
 const route = express.Router();
 const user = require("../models/user.model")
+const book = require("../models/book.model")
 // const client = require("../helper/connection_redis")
 const client = require("../helper/connect_ioredis")
 const {userValidate} = require('../helper/validation')
@@ -31,10 +32,6 @@ route.post("/register", async (req, res, next) => {
             password
         })
         const savedUser = await newUser.save()
-        const refreshToken = await signRefreshToken(savedUser._id)
-
-        res.cookie("jwt", refreshToken, COOKIE_OPTIONS )
-        res.cookie("userId", savedUser._id, COOKIE_OPTIONS)
 
         return res.json({
             status: "oke",
@@ -53,6 +50,8 @@ route.post("/login", async (req, res, next) => {
             throw new BadRequestError("Not validated")
         }
         const foundUser = await user.findOne({username})
+        const roles = foundUser.roles
+    
         if(!foundUser) {
             res.send("user not found")
         }
@@ -75,8 +74,7 @@ route.post("/login", async (req, res, next) => {
             }
         }
         
-
-        const accessToken = await signAccessToken(foundUser._id)
+        const accessToken = await signAccessToken(foundUser._id, roles)
         const refreshToken = await signRefreshToken(foundUser._id)
         req.session.refToken = refreshToken
         req.session.userId = foundUser._id
@@ -95,7 +93,6 @@ route.post("/login", async (req, res, next) => {
 })
 
 route.get("/list",verifyAccessToken , (req, res, next) => {
-   
     const listUser = [
         {
             username: "Matt"
@@ -106,7 +103,7 @@ route.get("/list",verifyAccessToken , (req, res, next) => {
     ]
     res.send(listUser)
 })
-route.get("/refresh", async (req, res, next) => {
+route.post("/refresh", async (req, res, next) => {
     const { deviceId } = req.body
     const refreshToken = req.cookies.refresh_token
     if(!refreshToken) {
@@ -127,9 +124,11 @@ route.get("/refresh", async (req, res, next) => {
         const payload = await verifyRefreshToken(refreshToken)
         const userId = payload.userId
         const check = await checkDeviceId(userId, deviceId)
+
         if(!check) {
         return next(createError.Unauthorized('You are not allowed to refresh token'))
         }
+
         const accessToken = await signAccessToken(userId)
         const refToken = await signRefreshToken(userId)
 
@@ -180,10 +179,5 @@ route.post('/logout', async (req, res, next) => {
     }
 })
 
-route.post('/check', async (req, res) => {
-    const ref = req.cookies.refresh_token
-    console.log(ref)
-    res.json(ref)
-})
 
 module.exports = route
