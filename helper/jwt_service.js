@@ -52,11 +52,11 @@ const signRefreshToken = async (userId) => {
 
         jwt.sign(payload, secret, options, (err, token) => {
             if (err) reject(err)
-            client.set(userId.toString(), token, 'EX', 365 * 24 * 60 * 60, (err, reply) => {
-                if(err) {
-                    return reject(err)
-                }
-            })
+            // client.set(userId.toString(), token, 'EX', 365 * 24 * 60 * 60, (err, reply) => {
+            //     if(err) {
+            //         return reject(err)
+            //     }
+            // })
             resolve(token)
         })
     })

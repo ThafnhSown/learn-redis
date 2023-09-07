@@ -11,8 +11,7 @@ const UserSchema = new Schema({
         required: true
     },
     roles: {
-        type: Array,
-        default: []
+        type: String,
     }
 })
 

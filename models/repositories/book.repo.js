@@ -64,4 +64,14 @@ const updateBook = async ({bookId, title, year, author}) => {
     })
 }
 
-module.exports = { findOneBook, findAllBook, findAllBooksForUser, deleteBook, updateBook }
+const updateStock = async({ id, quantity }) => {
+    return await books.findOneAndUpdate({
+        _id: convertToObjectIdMongodb(id),  
+    },
+    {
+        $inc: { stock: -quantity}
+    }
+    ).exec()
+}
+
+module.exports = { findOneBook, findAllBook, findAllBooksForUser, deleteBook, updateBook, updateStock }

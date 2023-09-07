@@ -16,7 +16,18 @@ const checkDeviceId = async (userId, deviceId) => {
     return true
 };
 
+const addRole = async(userId ,roles) => {
+    try {
+        roles.map((role) => {
+            client.lpush(`${userId}`, role)
+        })
+    } catch (error){
+        console.error('Redis Error:', error.message);
+    }
+}
+
 module.exports = {
     addDevice,
-    checkDeviceId
+    checkDeviceId,
+    addRole
 }

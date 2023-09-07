@@ -1,11 +1,16 @@
-const { checkDeviceId } = require('./helper/redis_service')
+const acl = require('./helper/acl_service')
 
 const test = async () => {
-    const userId = '64dce8f189e015c1ccc29d7a'
-    const res = await checkDeviceId(userId, "43")
+   acl.allow('admin', 'dashboard', 'view');
 
-    console.log(res)
+// Check permission
+   acl.isAllowed('64df3c98f4f7ca9d7c8a9ec8', 'dashboard', 'view', function(err, res) {
+    if(res){
+        console.log("User is allowed to view the dashboard");
+    } else {
+        console.log("User is not allowed to view the dashboard");
+    }
+});
 }
 
 test()
- 

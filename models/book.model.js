@@ -20,6 +20,10 @@ const bookSchema = new Schema(
       type: Number,
       required: false,
     },
+    stock: {
+      type: Number,
+      required: false,
+    },
     slug: String,
   },
   {

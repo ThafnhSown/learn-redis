@@ -1,21 +1,21 @@
 GET http://localhost:3001
 
 ###
-POST http://localhost:3001/user/register
+POST http://localhost:8080/v1/api/signup
 Content-Type: application/json 
 
 {
-    "username": "test3",
-    "password": "1234"
+    "username": "admin@gmail.com",
+    "password": "123456"
 }
 
 ###
-POST http://localhost:3001/user/login
+POST http://localhost:8080/v1/api/login
 Content-Type: application/json 
 
 {
-    "username": "sonidabezt5",
-    "password": "sonidabezt",
+    "username": "test1",
+    "password": "1234",
     "deviceId": "41"
 }
 
@@ -24,32 +24,104 @@ GET http://localhost:3001/user/list
 
 
 ###
-GET http://localhost:3001/user/refresh
+GET http://localhost:8080/v1/api/refresh-token
 Content-Type: application/json 
 
 {
-    "deviceId": "88"
+    "deviceId": "13"
 }
 
 ###
-POST http://localhost:3001/user/logout
-Content-Type: application/json 
+POST http://localhost:8080/v1/api/logout
+Content-Type: application/json
 
 
 ###
-POST http://localhost:3001/user/admin/add
+POST http://localhost:8080/v1/api/book/add
 Content-Type: application/json 
 
 {
-    "title": "test2",
+    "title": "test5",
     "year": 2023,
-    "author": "sonidabezt"
+    "author": "test1"
 }
 
 ###
-POST http://localhost:3001/user/admin/delete
+GET http://localhost:8080/v1/api/book/all
+Content-Type: application/json 
+
+###
+POST http://localhost:3001/book/delete
 Content-Type: application/json 
 
 {
     "bookId": "64e84ef1e2e035bad8441042"
 }
+
+###
+POST http://localhost:3001/book/update
+Content-Type: application/json 
+
+{
+    "bookId": "64e870b5e500f1a4e2b6d9c5",
+    "title": "update_second",
+    "year": 1001,
+    "author": "sonidabezt5"
+}
+
+
+###
+POST http://localhost:3001/book/sell
+Content-Type: application/json 
+
+{
+    "bookId": "64e85bfe117b7290a62c42ea",
+    "title": "test2_update",
+    "year": 2023,
+    "author": "sonidabezt5"
+}
+
+
+###
+POST http://localhost:3001/cart/add
+Content-Type: application/json 
+
+{
+    "userId": "64dceb033038975c4d5e7ac3",
+    "book": {
+        "shopId": "64ec51172dd3c32ef845b540",
+        "bookId": "64e85bfe117b7290a62c42ea"   
+    }
+   
+}
+
+###
+POST http://localhost:8080/v1/api/order/add
+Content-Type: application/json 
+
+{
+    "userId": "64e48e50bc3831cc33e2a690",
+    "bookId": "64e8713ae500f1a4e2b6d9d1",
+    "quantity": 1
+   
+}
+
+###
+PUT http://localhost:8080/v1/api/order/cancel
+Content-Type: application/json 
+
+{
+ "orderId": "64f7e2924623af2093559738"  
+}
+
+###
+GET http://localhost:8080/v1/api/order/all
+Content-Type: application/json 
+
+
+
+###
+GET http://localhost:8080/son/test
+
+###
+GET http://localhost:8080/v1/api/book/add

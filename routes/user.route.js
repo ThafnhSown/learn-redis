@@ -1,12 +1,11 @@
 const express = require('express');
 const route = express.Router();
 const user = require("../models/user.model")
-const book = require("../models/book.model")
-// const client = require("../helper/connection_redis")
 const client = require("../helper/connect_ioredis")
+const acl = require('../helper/acl_service')
 const {userValidate} = require('../helper/validation')
 const {signAccessToken, verifyAccessToken, signRefreshToken, verifyRefreshToken} = require('../helper/jwt_service')
-const { addDevice, checkDeviceId } = require('../helper/redis_service')
+const { addDevice, checkDeviceId} = require('../helper/redis_service')
 const {
     BadRequestError,    
     ForbiddenError
@@ -50,12 +49,19 @@ route.post("/login", async (req, res, next) => {
             throw new BadRequestError("Not validated")
         }
         const foundUser = await user.findOne({username})
-        const roles = foundUser.roles
-    
         if(!foundUser) {
             res.send("user not found")
         }
         const userId = foundUser._id
+        const roles = foundUser.roles
+        
+        acl.addUserRoles(userId.toString(), roles[0], err => {
+            if(err) {
+                console.log(err)
+            }
+            console.log("Added ", roles[0], ' role to user ', foundUser.username)
+        })
+      
         const check = await checkDeviceId(userId.toString(), deviceId)
 
         const isValid = await foundUser.isCheckPassword(password)
